@@ -1,0 +1,215 @@
+# Implementación de una red profunda
+# En esta implementación de Deep learning, nuestro objetivo es predecir la rotación de clientes para un determinado
+# banco, y de esta forma saber que clientes tienen mayor probabilidad de andonar el servicio bancario.
+# En conjunto de datos utilizados es relativamente pequeño y contiene 10000 filas con 14 columnas 
+# Se está utilizando la distribución Anaconda y marcos como Theano, TensorFlow y Keras. 
+# Keras está construido sobre Tensorflow y Theano, que funcionan como backends. 
+
+# Se comienza isntalando las librerias y cargando los datos. 
+
+# Artificial Neural Network 
+
+# Instalar Theano
+pip install --upgrade theano
+
+# Instalar Tensorflow
+pip install --upgrade tensorflow
+
+# Instalar Keras
+pip install --upgrade keras
+
+# Importar las librerias 
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Importar la base de datos 
+
+dataset = pd.red_csv('ruta del archivo')
+
+# Se crea arrays con las características incluidas en el conjunto de datos y la variable objetivo
+# que es la columna 14, etiquetada como "Exited"
+
+# El aspecto inicial de los datos es como se muestra a continuación:
+
+X = dataset.iloc[:,3:13].values #Db
+X
+
+Y = dataset.iloc[:,13].values #valores de la variable "Exited"
+Y
+
+# Para realizar la codificación one-hot de variables categóricas se puede usar el código que usa la librería scikit-learn.
+# Se importa la clase OneHotEncoder de sklearn.preprocessing y la librería numpy.
+# Se crea un array de ejemplo llamado categorias que contiene variables categóricas A,B,C,A,C. Este array se cnvierte en un matriz
+# de una sola columna utilizando reshape(-1,1) para que tenda una forma adecuada para el procesamiento de OneHotEncoder.
+# Se crea una instancia de OneHotEncoder llamada encoder.
+# Se ajusta y transforma los datos categóricos utilizando el método fit_transform del objetivo encoder.
+# Esto convierte las cetegorías en una representación one-hot.
+# los datos codificados se convierten en una matriz densa (una matriz regular) utilizadno el método toarray().
+# Finalmente, se imprime la matriz densa que contiene los datos codificados. 
+
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
+import numpy as np
+
+labelencoder_X_1 = LabelEncoder()
+X[:,1] = labelencoder_X_1.fit_transform(X[:,1])
+
+labelencoder_X_2 = LabelEncoder()
+
+X[:,2] = labelencoder_X_2.fit_transform(X[:,2])
+X
+
+onehotencoder = OneHotEncoder(categorical_features = [1])
+X = onehotencoder.fit_transform(X).toarray()
+
+X = X[:,1:]
+X
+
+# Crear un array de ejemplo con variables categóricas
+#categorias = np.array(['A', 'B', 'C', 'A', 'C']).reshape(-1, 1)
+ 
+# Crear una instancia de OneHotEncoder
+#encoder = OneHotEncoder()
+ 
+# Ajustar y transformar los datos
+#datos_codificados = encoder.fit_transform(categorias)
+ 
+# Convertir los datos codificados en una matriz densa
+#datos_codificados_densos = datos_codificados.toarray()
+ 
+# Imprimir los datos codificados
+#print(datos_codificados_densos)
+
+# Se utiliza la función train_test_split de ScikitLear para dividir nuestros datos en conjuntos de entrenamiento
+# y conjunto de prueba. Se mantiene el ratio train_test_split a la proporción 80:20
+
+# Dividir el dataset en Training set y Test set 
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X,Y, test_siza=0.2)
+
+# Se escalan los datos para que sena más representativos.
+# Se ajusta y transforma los datos de entrenamiento usando la función StandardScaler. Se estandariza nuestra escala para que se 
+# utilice el mismo método ajustado para transformar / escalar datos de prueba.
+
+# Feature Scaling
+
+from sklearn.preprocessing import StandardScaler
+
+sc = StandardScaler()
+
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+X
+
+# Los datos ahora se escalan correctamente. Finalmente, ya tenemos listo el preprocesamiento de los datos. 
+# Ahora, se comienza con nuestro modelo
+# Se importan los módulos necesarios aquí. Se necesita el módulo secuencial para inicializar la red neuronal 
+# y el mósulo dense para agregar las capas ocultas
+
+# Importar la libreria Keras y sus paquetes 
+
+import keras
+from keras.models import Sequential
+from keras.layers import Dense 
+
+# El nombre del modelo será "Classifier" ya que nuestro objetivo es clasificar la rotación de clientes. 
+# Luego se usa el módulo secuencial para la inicialización 
+
+# Iniciamos la red neuronal 
+
+classifier = Sequential()
+
+# Se agrega las capas ocultas una por una usando la función Dense. 
+# Nuesto primer parámetro es **output_dim**. Es la cantidad de nodos que agregamos a esta capa.
+# **int** es la inicialización del gradiente estocástico descendiente.
+
+# En una red neuronal se asigna pesos a cada nodo. En la inicialización, los pesos deben estar cerca de cero 
+# y los inicialiamos aleatoriamente usando la función **uniform**. El parámetro **input_dim** es necesario 
+# solo para la primera capa, ya que el modleo no concoce el úmero de nuestras variablesde enrada. 
+# Aquí el número total de variables de entrada es 11. En la segunda capa, el modelo conoce automáticamente 
+# el número de variables de entrada de la primera capa oculta. 
+
+# Agregar la capa de entrada y la primera capa oculta: 
+
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 1))
+
+# Se agrega la segunda capa oculta: 
+
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+
+# Se agrega la capa de salida:
+
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'sigmoid'))
+
+# Ahora se va a compilar nuestra red. Hasta ahora se ha agregado varias capas a nuestro clasificador. Ahora se 
+# va a ir compilando utilizando el método de **compile**. Los argumentos agregados en el control de compilación 
+# final completan la red neuronal, por lo que se debe ser cuidadosos en este paso.
+
+# **Optimizer** Conjunto óptimo de pesos. **Denscenso de gradiente estocático (SGD). El SGD depende de la perdida 
+# por lo que nuesto segundo parámetro es la pérdida. Si nuestra variable dependiente es binaria, se usa la función 
+# de perdida logaritmica llamada **'binary_crossentropy'**, y si nuestra variable dependiente tiene más de dos categorias
+# en la salida, entonces usamos **'categorical_crossentropy'**. 
+# Se quiere mejorar el rendimiento de nuestra red neuronal en función de la precisión por loq ue agregamos métricas como precisión.
+
+# Compilar red neuronal
+
+classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+
+# Se deben ajustar varios códigos en este paso.
+
+# Ajuste de la red neuronal al conjunto de entrenamiento
+# Ahora se entrena nuestro modelo en los datos de entrenamiento. Se usa el método **fit** para adaptarse a nuestro modelo. 
+# También se optimiza los pesos para mejorar la eficiencia del modelo. Para eto, se tiene que actualizar los pesos.
+# El **Tamaño del lote (Batch size) es el número de observaciones después de las cuales actualizamos los pesos. 
+# La **Época (epoch)** es el número total de iteraciones. Los valores de tamaño de lote y época se eligen por el método de prueba y error.
+
+classifier.fit(X_train, y_train, batch_size = 10, epochs = 50)
+
+# Ya se está en condiciones de hacer predicciones y evaluar el modelo.
+
+# Predecir los resultados Test set 
+
+y_pred = classifier.predict(X_test)
+y_pred = (y_pred > 0.5)
+
+# El resultado de la predicción le dará la probabilidad de que el cliente abandole la empresa. Se convierte esa probabilidad en binario 0 y 1.
+# Se va a predecir sobre una observación: 
+
+# Geography: Spain
+# Credit Score: 500
+# Gender: Female
+# Age: 40
+# Tenure: 3
+# Balance: 50000
+# Number of Products: 2
+# Has Credit Card: Yes
+# Is Active Member: Yes
+
+# Todos estos valores se codifican, según vimos antes: 
+
+new_prediction = classifier.predict(sc.transform(np.array([[0.0,0,500,1,40,3,50000,2,1,1,40000]])))
+new_prediction = (new_prediction > 0.5)
+
+# En el último paso evaluamos el rendimiento de nuestro modelo. Ya se tienen resultados originales y, por lo tanto, se puede construir una 
+# matriz de confusión para verificar la precisión del modelo.
+
+# Se contruye la matriz de confusión:
+
+from sklearn.metrics import confusion_matrix
+
+cm = confusion_matrix(y_test,y_pred)
+cm
+
+# A partir de la matriz de confusión, la precisión de nuestro modelo se puede clacular como: 
+
+Accuracy = 1531+151/2000=0.841
+
+# Se logra una precisión del 84.10%.
+# Se puede ver el resultado de la predicción con: 
+
+print(new_prediction)

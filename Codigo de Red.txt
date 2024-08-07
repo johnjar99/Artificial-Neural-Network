@@ -1,0 +1,134 @@
+# Instalar Theano
+!pip install theano
+
+# Instalar Tensorflow
+!pip install tensorflow
+
+# Instalar Keras
+!pip install keras
+
+# Importar las librerias 
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Importar la base de datos 
+
+dataset = pd.read_csv('/content/REC017260.csv')
+
+# El aspecto inicial de los datos es como se muestra a continuación:
+
+X = dataset.iloc[:,3:13].values #Db
+print(X)
+
+Y = dataset.iloc[:,13].values #valores de la variable "Exited"
+print(Y)
+
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn.compose import ColumnTransformer
+import numpy as np
+
+# Supongamos que ya tienes el array X definido
+# Ejemplo: X = np.array([...])
+
+# Codificar las columnas específicas usando LabelEncoder
+labelencoder_X_1 = LabelEncoder()
+X[:, 1] = labelencoder_X_1.fit_transform(X[:, 1])
+
+labelencoder_X_2 = LabelEncoder()
+X[:, 2] = labelencoder_X_2.fit_transform(X[:, 2])
+
+# Crear el transformador de columnas especificando las columnas categóricas
+column_transformer = ColumnTransformer(
+    transformers=[
+        ('onehot', OneHotEncoder(), [1, 2])  # Índices de las columnas categóricas
+    ],
+    remainder='passthrough'  # Dejar las demás columnas tal cual
+)
+
+# Ajustar y transformar los datos
+X = column_transformer.fit_transform(X)
+
+# Eliminar la primera columna para evitar la trampa de variables ficticias
+X = X[:, 1:]
+
+print(X)
+
+# Dividir el dataset en Training set y Test set 
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X,Y, test_size=0.2)
+
+# Feature Scaling
+
+from sklearn.preprocessing import StandardScaler
+
+sc = StandardScaler()
+
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+X
+
+# Importar la libreria Keras y sus paquetes 
+
+import keras
+from keras.models import Sequential
+from keras.layers import Dense 
+
+# Add a Flatten layer before your Dense layer
+from keras.layers import Flatten
+
+# Iniciamos la red neuronal 
+
+classifier = Sequential()
+classifier.add(Flatten())
+
+# Agregar la capa de entrada y la primera capa oculta: 
+
+input_dim = X_train.shape[1]  # Asegurarse de que input_dim sea el número correcto de características
+classifier.add(Dense(units=6, kernel_initializer='uniform', activation='relu', input_dim=input_dim))
+
+# Se agrega la segunda capa oculta: 
+
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+
+# Se agrega la capa de salida:
+
+classifier.add(Dense(units = 1, kernel_initializer = 'uniform', activation = 'sigmoid'))
+
+# Compilar red neuronal
+
+classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+
+classifier.fit(X_train, y_train, batch_size = 10, epochs = 50)
+
+# Predecir los resultados Test set 
+
+y_pred = classifier.predict(X_test)
+y_pred = (y_pred > 0.5)
+
+# Todos estos valores se codifican, según vimos antes: 
+
+new_prediction = classifier.predict(sc.transform(np.array([[0,0,0,0.0,0,500,1,40,3,50000,2,1,1,40000]])))
+new_prediction = (new_prediction > 0.5)
+new_prediction
+
+# Se contruye la matriz de confusión:
+
+from sklearn.metrics import confusion_matrix
+
+cm = confusion_matrix(y_test,y_pred)
+cm
+
+# A partir de la matriz de confusión, la precisión de nuestro modelo se puede clacular como: 
+
+Accuracy = 1499+190/2000
+#Accuracy = 86.5%
+
+# Se logra una precisión del 86.5%.
+# Se puede ver el resultado de la predicción con: 
+
+print(new_prediction)

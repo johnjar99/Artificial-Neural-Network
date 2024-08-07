@@ -1,0 +1,119 @@
+
+**El algoritmo de propagación directa** 
+
+En esta sección se aprendera a cómo escribir código para hacer propagación hacia adelante (predicción) para una red neuronal simple.
+
+En el algoritmo de propagación directa, cada punto de datos es un cliente. 
+La primera entrada es cuántas cuentas tienen, y la segunda entrada es cuántos hijos tienen. 
+El modelo predecirá cuántas transacciones realizará el usuario en el próximo año.
+
+Los datos de entrada se cargan preciamente como datos de entreda, y los pesos están en un diccionario llamado **weights**.
+El array de pesos para el primer nodo en la capa oculta está en **pesos['node_0'], y para el segundo nodo en la capa oculta está en **pesos['node_1'] respectivamente.
+
+Los pesos que se alimentan al nodo de salida están disponibles en weights.
+Una función de activación es una función que funciona en cada nodo. Transforma la entrada del nodo en alguna salida. 
+
+La función de activación lineal rectificada (llamada **ReLU**) se usa ampliamente en redes de muy alto rendimiento.
+Ejemplo:
+relu(4)=4
+relu(-2)=0
+
+Se completa la definición de la función relu():
+-Usamos la función **max()** para calcular el valor de la salida de relu().
+-Aplicamos la función relu() a **node_0_input** para calcular **node_0_output**.
+
+Código:
+
+import numpy as np
+input_data = np.array([-1,2])
+weights = {
+'node_0':np.array([3,3]),
+'node_1':np.array([1,5]),
+'output':np.array([2,-1])
+}
+
+node_0_input = (input_data*weights['node_0']).sum()
+node_0_output = np.tanh(node_0_input)
+
+node_1_input = (input_data*weights['node_1']).sum()
+node_1_output = np.tanh(node_1_input)
+
+hidden_layer_output = np.array(node_0_output, node_1_output)
+
+output = (hidden_layer_output*weights['output']).sum()
+output
+
+def relu(input)
+
+**Definición de relu función de activación**
+
+#Calcular el valor de salida de la función relu: output
+
+output = max(input,0)
+
+#Retmar el valor recien calculado 
+
+return(output)
+
+# Calcular valor de node 0:node_0_output
+
+node_0_input = (input_data*weights['node_0']).sum()
+node_0_output= relu(node_0_input)
+
+
+# Calcular valor de node 1:node_1_output
+
+node_1_input = (input_data*weights['node_1']).sum()
+node_1_output= relu(node_1_input)
+
+# Guardar valores en el array: hidden_layer_outputs
+
+hidden_layer_outputs = np.array([node_0_output,node_1_output])
+
+# Calcular salida del modelo (sin aplicar relu)
+
+model_output = (hidden_layer_outputs*weights['output']).sum()
+model_output #Mostrar salida del modelo 
+
+A continuación, se va a desarrollar una función llamada **predic_with_network()**.
+Esta función generará predicciones para múltiples observacipnes de datos, tomadas de la red anterior tomada como **input_data**.
+Se están utilizando los pesos dados en la red anterior, la función relu() también se está utilizando.
+
+# Definir predict_with_network()
+def predict_with_network(input_data_row, weights):
+
+# Calcular valor node 0
+
+node_0_input = (input_data_row*weights['node_0'].sum()
+node_0_output = relu(node_0_input) 
+
+# Calcular valor node 1 
+
+node_1_input = (input_data_row*weights['node_1'].sum()
+node_1_output = relu(node_1_input) 
+
+# Guardar los valores de node en un array: hidden_layer_outputs
+
+hidden_layer_outputs = np.array([node_0_output, node_1_output])
+
+# Calcular salida del modelo 
+
+input_to_final_layer = (hidden_layer_outputs*weights['output'].sum()
+
+model_output = relu(input_to_final_layer)
+
+# Retomar slaida del modelo 
+
+return(model_output)
+
+# Crear lista vacia para almacenar los resultados de la predicción 
+
+results = []
+
+for input_data_row in input_data:
+
+# Agregar prediccion a los resultados 
+
+results.append(predict_with_network(input_data_row, weights))
+
+print(results)
